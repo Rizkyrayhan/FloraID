@@ -22,7 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FlashOff
-import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Image as ImageIcon
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -120,7 +120,7 @@ fun CameraScreen(
             ) {
                 val path = Path().apply {
                     moveTo(0f, size.height)
-                    quadraticBezierTo(size.width / 2, size.height - 120.dp.toPx(), size.width, size.height)
+                    quadraticTo(size.width / 2, size.height - 120.dp.toPx(), size.width, size.height)
                     close()
                 }
                 drawPath(path, Color.White.copy(alpha = 0.2f))
@@ -137,7 +137,7 @@ fun CameraScreen(
                 // Gallery Icon
                 IconButton(onClick = { /* TODO gallery */ }) {
                     Icon(
-                        Icons.Default.Image, 
+                        Icons.Default.ImageIcon, 
                         contentDescription = "Gallery", 
                         tint = Color.White,
                         modifier = Modifier.size(32.dp)
@@ -216,50 +216,50 @@ fun FloralFrame(modifier: Modifier = Modifier) {
             // Top Left
             Path().apply {
                 moveTo(40.dp.toPx(), 0f)
-                quadraticBezierTo(0f, 0f, 0f, 40.dp.toPx())
+                quadraticTo(0f, 0f, 0f, 40.dp.toPx())
                 // Add some small "leaf" shapes
                 for (i in 0..3) {
                     val offset = i * 12.dp.toPx()
                     moveTo(offset, 0f)
-                    quadraticBezierTo(offset + 6.dp.toPx(), -8.dp.toPx(), offset + 12.dp.toPx(), 0f)
+                    quadraticTo(offset + 6.dp.toPx(), -8.dp.toPx(), offset + 12.dp.toPx(), 0f)
                     moveTo(0f, offset)
-                    quadraticBezierTo(-8.dp.toPx(), offset + 6.dp.toPx(), 0f, offset + 12.dp.toPx())
+                    quadraticTo(-8.dp.toPx(), offset + 6.dp.toPx(), 0f, offset + 12.dp.toPx())
                 }
             },
             // Top Right
             Path().apply {
                 moveTo(w - 40.dp.toPx(), 0f)
-                quadraticBezierTo(w, 0f, w, 40.dp.toPx())
+                quadraticTo(w, 0f, w, 40.dp.toPx())
                 for (i in 0..3) {
                     val offset = i * 12.dp.toPx()
                     moveTo(w - offset, 0f)
-                    quadraticBezierTo(w - offset - 6.dp.toPx(), -8.dp.toPx(), w - offset - 12.dp.toPx(), 0f)
+                    quadraticTo(w - offset - 6.dp.toPx(), -8.dp.toPx(), w - offset - 12.dp.toPx(), 0f)
                     moveTo(w, offset)
-                    quadraticBezierTo(w + 8.dp.toPx(), offset + 6.dp.toPx(), w, offset + 12.dp.toPx())
+                    quadraticTo(w + 8.dp.toPx(), offset + 6.dp.toPx(), w, offset + 12.dp.toPx())
                 }
             },
             // Bottom Right
             Path().apply {
                 moveTo(w, h - 40.dp.toPx())
-                quadraticBezierTo(w, h, w - 40.dp.toPx(), h)
+                quadraticTo(w, h, w - 40.dp.toPx(), h)
                 for (i in 0..3) {
                     val offset = i * 12.dp.toPx()
                     moveTo(w, h - offset)
-                    quadraticBezierTo(w + 8.dp.toPx(), h - offset - 6.dp.toPx(), w, h - offset - 12.dp.toPx())
+                    quadraticTo(w + 8.dp.toPx(), h - offset - 6.dp.toPx(), w, h - offset - 12.dp.toPx())
                     moveTo(w - offset, h)
-                    quadraticBezierTo(w - offset - 6.dp.toPx(), h + 8.dp.toPx(), w - offset - 12.dp.toPx(), h)
+                    quadraticTo(w - offset - 6.dp.toPx(), h + 8.dp.toPx(), w - offset - 12.dp.toPx(), h)
                 }
             },
             // Bottom Left
             Path().apply {
                 moveTo(40.dp.toPx(), h)
-                quadraticBezierTo(0f, h, 0f, h - 40.dp.toPx())
+                quadraticTo(0f, h, 0f, h - 40.dp.toPx())
                 for (i in 0..3) {
                     val offset = i * 12.dp.toPx()
                     moveTo(offset, h)
-                    quadraticBezierTo(offset + 6.dp.toPx(), h + 8.dp.toPx(), offset + 12.dp.toPx(), h)
+                    quadraticTo(offset + 6.dp.toPx(), h + 8.dp.toPx(), offset + 12.dp.toPx(), h)
                     moveTo(0f, h - offset)
-                    quadraticBezierTo(-8.dp.toPx(), h - offset - 6.dp.toPx(), 0f, h - offset - 12.dp.toPx())
+                    quadraticTo(-8.dp.toPx(), h - offset - 6.dp.toPx(), 0f, h - offset - 12.dp.toPx())
                 }
             }
         )

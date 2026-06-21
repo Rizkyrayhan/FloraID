@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.BrightnessHigh
 import androidx.compose.material.icons.outlined.Opacity
@@ -26,7 +28,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -213,7 +214,7 @@ fun ResultScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = primaryGreen, contentColor = Color.White),
                     shape = RoundedCornerShape(32.dp)
                 ) {
-                    Icon(painter = painterResource(android.R.drawable.ic_menu_save), contentDescription = null, modifier = Modifier.size(24.dp))
+                    Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.width(12.dp))
                     Text("Save to My Collection", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
@@ -229,7 +230,7 @@ fun ResultScreen(
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = primaryGreen),
                     border = androidx.compose.foundation.BorderStroke(1.dp, primaryGreen)
                 ) {
-                    Icon(painter = painterResource(android.R.drawable.ic_menu_camera), contentDescription = null, modifier = Modifier.size(24.dp))
+                    Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.width(12.dp))
                     Text("Retake Photo", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
