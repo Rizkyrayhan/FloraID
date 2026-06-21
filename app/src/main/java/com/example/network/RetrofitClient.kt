@@ -13,7 +13,7 @@ import retrofit2.http.Query
 import java.util.concurrent.TimeUnit
 
 interface GeminiApiService {
-    @POST("v1beta/models/gemini-3.5-flash:generateContent")
+    @POST("v1beta/models/gemini-3.1-flash-lite:generateContent")
     suspend fun generateContent(
         @Query("key") apiKey: String = BuildConfig.GEMINI_API_KEY,
         @Body request: GenerateContentRequest

@@ -21,35 +21,28 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.FlashOn
-import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.FlashOff
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.models.ScanMode
 import java.util.concurrent.Executor
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 @Composable
 fun CameraScreen(
@@ -82,164 +75,204 @@ fun CameraScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Overlay Guide
+        // Floral Overlay Guide
         CameraOverlay(modifier = Modifier.fillMaxSize())
 
-        // Top Bar
-        Row(
+        // Top Bar - Simple Close Button
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 48.dp, start = 16.dp, end = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(top = 48.dp, start = 16.dp, end = 16.dp)
         ) {
             IconButton(
                 onClick = onClose,
                 modifier = Modifier
+                    .size(40.dp)
                     .background(Color.Black.copy(alpha = 0.3f), CircleShape)
             ) {
-                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+                Icon(
+                    Icons.Default.Close, 
+                    contentDescription = "Close", 
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
             }
-            Text(
-                text = "FloraID",
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.width(48.dp))
         }
 
-        // Mode Selector Control (Identifikasi vs Diagnosis)
-        Row(
+        // Bottom Bar Area
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 156.dp)
-                .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxWidth()
+                .height(200.dp)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.4f)),
+                        startY = 0f
+                    )
+                )
         ) {
-            val modes = listOf(
-                ScanMode.IDENTIFY to "Identifikasi",
-                ScanMode.DIAGNOSE to "Diagnosis Penyakit"
-            )
-            modes.forEach { (mode, label) ->
-                val isSelected = selectedMode == mode
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
-                        .clickable { onModeSelected(mode) }
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text(
-                        text = label,
-                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else Color.White,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
+            // Leaf graphic background behind button (visual fluff)
+            Canvas(modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .align(Alignment.BottomCenter)
+            ) {
+                val path = Path().apply {
+                    moveTo(0f, size.height)
+                    quadraticBezierTo(size.width / 2, size.height - 120.dp.toPx(), size.width, size.height)
+                    close()
+                }
+                drawPath(path, Color.White.copy(alpha = 0.2f))
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 60.dp, start = 48.dp, end = 48.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Gallery Icon
+                IconButton(onClick = { /* TODO gallery */ }) {
+                    Icon(
+                        Icons.Default.Image, 
+                        contentDescription = "Gallery", 
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
                     )
                 }
-            }
-        }
 
-        // Bottom Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 48.dp, start = 32.dp, end = 32.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = { /* TODO gallery */ },
-                modifier = Modifier
-                    .background(Color.Black.copy(alpha = 0.3f), CircleShape)
-            ) {
-                Icon(Icons.Default.PhotoLibrary, contentDescription = "Gallery", tint = Color.White)
-            }
-
-            // Capture Button
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(CircleShape)
-                    .border(4.dp, Color.White.copy(alpha = 0.5f), CircleShape)
-                    .padding(8.dp)
-                    .background(Color.White, CircleShape)
-                    .clickable {
+                // Main Capture Button
+                CaptureButton(
+                    onClick = {
                         takePhoto(imageCapture, context, ContextCompat.getMainExecutor(context), onImageCaptured)
                     }
-            )
+                )
 
-            IconButton(
-                onClick = { /* TODO flash */ },
-                modifier = Modifier
-                    .background(Color.Black.copy(alpha = 0.3f), CircleShape)
-            ) {
-                Icon(Icons.Default.FlashOn, contentDescription = "Flash", tint = Color.White)
+                // Flash Icon
+                IconButton(onClick = { /* TODO flash */ }) {
+                    Icon(
+                        Icons.Default.FlashOff, 
+                        contentDescription = "Flash", 
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
+fun CaptureButton(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(84.dp)
+            .border(3.dp, Color.White, CircleShape)
+            .padding(6.dp)
+            .clip(CircleShape)
+            .background(Color.White)
+            .clickable { onClick() }
+    )
+}
+
+@Composable
 fun CameraOverlay(modifier: Modifier = Modifier) {
-    Box(modifier = modifier) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val strokeWidth = 2.dp.toPx()
-            val cornerLength = 32.dp.toPx()
-            val rectWidth = size.width * 0.7f
-            val rectHeight = size.height * 0.5f
-            val left = (size.width - rectWidth) / 2
-            val top = (size.height - rectHeight) / 2
-            val right = left + rectWidth
-            val bottom = top + rectHeight
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        // Decorative Floral Frame
+        FloralFrame(
+            modifier = Modifier
+                .size(width = 280.dp, height = 360.dp)
+                .padding(bottom = 40.dp)
+        )
 
-            // Draw bounding box corners
-            val path = Path().apply {
-                // Top Left
-                moveTo(left, top + cornerLength)
-                lineTo(left, top)
-                lineTo(left + cornerLength, top)
-                // Top Right
-                moveTo(right - cornerLength, top)
-                lineTo(right, top)
-                lineTo(right, top + cornerLength)
-                // Bottom Right
-                moveTo(right, bottom - cornerLength)
-                lineTo(right, bottom)
-                lineTo(right - cornerLength, bottom)
-                // Bottom Left
-                moveTo(left + cornerLength, bottom)
-                lineTo(left, bottom)
-                lineTo(left, bottom - cornerLength)
-                
-                // Crosshair in middle
-                val centerX = size.width / 2
-                val centerY = size.height / 2
-                moveTo(centerX - 16.dp.toPx(), centerY)
-                lineTo(centerX + 16.dp.toPx(), centerY)
-                moveTo(centerX, centerY - 16.dp.toPx())
-                lineTo(centerX, centerY + 16.dp.toPx())
-            }
-
-            drawPath(
-                path = path,
-                color = Color.White.copy(alpha = 0.7f),
-                style = Stroke(width = strokeWidth)
-            )
-        }
-
+        // Instruction Text
         Text(
             text = "Align leaf within the frame",
             color = Color.White,
+            fontSize = 16.sp,
             modifier = Modifier
                 .align(Alignment.Center)
-                .offset(y = 180.dp)
-                .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .offset(y = 170.dp)
+                .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                .padding(horizontal = 24.dp, vertical = 10.dp)
         )
+    }
+}
+
+@Composable
+fun FloralFrame(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val stroke = 2.dp.toPx()
+        val color = Color(0xFFC5E1A5) // Light Green
+
+        // Draw leafy corners
+        // This is a simplified programmatic version of the vine/leaf frame
+        val cornerPaths = listOf(
+            // Top Left
+            Path().apply {
+                moveTo(40.dp.toPx(), 0f)
+                quadraticBezierTo(0f, 0f, 0f, 40.dp.toPx())
+                // Add some small "leaf" shapes
+                for (i in 0..3) {
+                    val offset = i * 12.dp.toPx()
+                    moveTo(offset, 0f)
+                    quadraticBezierTo(offset + 6.dp.toPx(), -8.dp.toPx(), offset + 12.dp.toPx(), 0f)
+                    moveTo(0f, offset)
+                    quadraticBezierTo(-8.dp.toPx(), offset + 6.dp.toPx(), 0f, offset + 12.dp.toPx())
+                }
+            },
+            // Top Right
+            Path().apply {
+                moveTo(w - 40.dp.toPx(), 0f)
+                quadraticBezierTo(w, 0f, w, 40.dp.toPx())
+                for (i in 0..3) {
+                    val offset = i * 12.dp.toPx()
+                    moveTo(w - offset, 0f)
+                    quadraticBezierTo(w - offset - 6.dp.toPx(), -8.dp.toPx(), w - offset - 12.dp.toPx(), 0f)
+                    moveTo(w, offset)
+                    quadraticBezierTo(w + 8.dp.toPx(), offset + 6.dp.toPx(), w, offset + 12.dp.toPx())
+                }
+            },
+            // Bottom Right
+            Path().apply {
+                moveTo(w, h - 40.dp.toPx())
+                quadraticBezierTo(w, h, w - 40.dp.toPx(), h)
+                for (i in 0..3) {
+                    val offset = i * 12.dp.toPx()
+                    moveTo(w, h - offset)
+                    quadraticBezierTo(w + 8.dp.toPx(), h - offset - 6.dp.toPx(), w, h - offset - 12.dp.toPx())
+                    moveTo(w - offset, h)
+                    quadraticBezierTo(w - offset - 6.dp.toPx(), h + 8.dp.toPx(), w - offset - 12.dp.toPx(), h)
+                }
+            },
+            // Bottom Left
+            Path().apply {
+                moveTo(40.dp.toPx(), h)
+                quadraticBezierTo(0f, h, 0f, h - 40.dp.toPx())
+                for (i in 0..3) {
+                    val offset = i * 12.dp.toPx()
+                    moveTo(offset, h)
+                    quadraticBezierTo(offset + 6.dp.toPx(), h + 8.dp.toPx(), offset + 12.dp.toPx(), h)
+                    moveTo(0f, h - offset)
+                    quadraticBezierTo(-8.dp.toPx(), h - offset - 6.dp.toPx(), 0f, h - offset - 12.dp.toPx())
+                }
+            }
+        )
+
+        cornerPaths.forEach { path ->
+            drawPath(path, color, style = Stroke(width = stroke))
+        }
+
+        // Center crosshair (subtle)
+        val cx = w / 2
+        val cy = h / 2
+        drawLine(color.copy(alpha = 0.5f), Offset(cx - 10.dp.toPx(), cy), Offset(cx + 10.dp.toPx(), cy), stroke)
+        drawLine(color.copy(alpha = 0.5f), Offset(cx, cy - 10.dp.toPx()), Offset(cx, cy + 10.dp.toPx()), stroke)
     }
 }
 
