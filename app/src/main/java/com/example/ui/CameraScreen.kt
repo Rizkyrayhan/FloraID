@@ -21,8 +21,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.FlashOff
-import androidx.compose.material.icons.filled.Image as ImageIcon
+import androidx.compose.material.icons.outlined.FlashOff
+import androidx.compose.material.icons.outlined.Image as ImageIcon
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -43,6 +43,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.models.ScanMode
 import java.util.concurrent.Executor
+
 
 @Composable
 fun CameraScreen(
@@ -137,7 +138,7 @@ fun CameraScreen(
                 // Gallery Icon
                 IconButton(onClick = { /* TODO gallery */ }) {
                     Icon(
-                        Icons.Default.ImageIcon, 
+                        Icons.Outlined.ImageIcon, 
                         contentDescription = "Gallery", 
                         tint = Color.White,
                         modifier = Modifier.size(32.dp)
@@ -154,7 +155,7 @@ fun CameraScreen(
                 // Flash Icon
                 IconButton(onClick = { /* TODO flash */ }) {
                     Icon(
-                        Icons.Default.FlashOff, 
+                        Icons.Outlined.FlashOff, 
                         contentDescription = "Flash", 
                         tint = Color.White,
                         modifier = Modifier.size(32.dp)
@@ -173,9 +174,29 @@ fun CaptureButton(onClick: () -> Unit) {
             .border(3.dp, Color.White, CircleShape)
             .padding(6.dp)
             .clip(CircleShape)
-            .background(Color.White)
-            .clickable { onClick() }
-    )
+            .background(Color.White.copy(alpha = 0.9f))
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.size(40.dp)) {
+            val path = Path().apply {
+                moveTo(size.width / 2, size.height)
+                quadraticTo(0f, size.height * 0.8f, 0f, size.height * 0.4f)
+                quadraticTo(size.width * 0.2f, 0f, size.width / 2, 0f)
+                quadraticTo(size.width * 0.8f, 0f, size.width, size.height * 0.4f)
+                quadraticTo(size.width, size.height * 0.8f, size.width / 2, size.height)
+                moveTo(size.width / 2, size.height)
+                lineTo(size.width / 2, size.height * 0.1f)
+                moveTo(size.width / 2, size.height * 0.7f)
+                lineTo(size.width * 0.2f, size.height * 0.5f)
+                moveTo(size.width / 2, size.height * 0.5f)
+                lineTo(size.width * 0.8f, size.height * 0.3f)
+                moveTo(size.width / 2, size.height * 0.3f)
+                lineTo(size.width * 0.25f, size.height * 0.15f)
+            }
+            drawPath(path, Color.LightGray, style = Stroke(width = 1.5.dp.toPx()))
+        }
+    }
 }
 
 @Composable

@@ -12,10 +12,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.BrightnessHigh
+import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Opacity
 import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.material3.*
@@ -78,13 +78,13 @@ fun ResultScreen(
         ) {
             IconButton(
                 onClick = onRetake,
-                modifier = Modifier.background(Color.White.copy(alpha = 0.2f), CircleShape)
+                modifier = Modifier.background(Color.Black.copy(alpha = 0.3f), CircleShape)
             ) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
             }
             IconButton(
                 onClick = { /* TODO share */ },
-                modifier = Modifier.background(Color.White.copy(alpha = 0.2f), CircleShape)
+                modifier = Modifier.background(Color.Black.copy(alpha = 0.3f), CircleShape)
             ) {
                 Icon(Icons.Default.Share, contentDescription = "Share", tint = Color.White)
             }
@@ -117,6 +117,7 @@ fun ResultScreen(
                         text = if (mode == ScanMode.DIAGNOSE) (result.commonName?.let { "Plant: $it" } ?: result.latinName ?: "") else (result.latinName ?: "Monstera adansonii"),
                         fontSize = 18.sp,
                         fontStyle = FontStyle.Italic,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
                         color = primaryGreen.copy(alpha = 0.6f)
                     )
                 }
@@ -151,27 +152,51 @@ fun ResultScreen(
                     }
                 }
             }
-
+ 
             Spacer(modifier = Modifier.height(16.dp))
             HorizontalDivider(color = primaryGreen.copy(alpha = 0.1f))
             Spacer(modifier = Modifier.height(16.dp))
-
+ 
             // Body and Tags (Scrollable)
             Column(modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())) {
                 
-                Text(
-                    text = result.description ?: "A striking and highly sought-after aroid, celebrated for its unique fenestrations—the characteristic oval holes that develop naturally in its vibrant green leaves. These adaptive fenestrations help the plant withstand strong winds and allow light to pass through to lower foliage in its natural tropical habitat.\n\nOften cultivated as an indoor climbing or trailing plant, it brings a bold, jungle-like aesthetic to interior spaces while remaining remarkably forgiving for domestic gardeners.",
-                    fontSize = 17.sp,
-                    color = primaryGreen.copy(alpha = 0.8f),
-                    lineHeight = 26.sp
-                )
+                Box {
+                    // Leaf Watermark
+                    Canvas(modifier = Modifier.matchParentSize()) {
+                        val path = Path().apply {
+                            moveTo(size.width * 0.8f, size.height)
+                            quadraticTo(size.width * 0.2f, size.height * 0.8f, 0f, size.height * 0.3f)
+                            quadraticTo(size.width * 0.1f, 0f, size.width * 0.7f, 0f)
+                            quadraticTo(size.width, size.height * 0.2f, size.width * 0.8f, size.height)
+                            moveTo(size.width * 0.8f, size.height)
+                            lineTo(size.width * 0.3f, size.height * 0.2f)
+                            moveTo(size.width * 0.6f, size.height * 0.7f)
+                            lineTo(size.width * 0.3f, size.height * 0.5f)
+                            moveTo(size.width * 0.5f, size.height * 0.5f)
+                            lineTo(size.width * 0.2f, size.height * 0.35f)
+                        }
+                        drawPath(path, Color(0xFFD6E8DB).copy(alpha = 0.4f), style = Stroke(width = 4.dp.toPx()))
+                    }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Tags section
-                FlowRow(
+                    Column {
+                        Text(
+                    text = when (selectedTab) {
+                        0 -> if (mode == ScanMode.DIAGNOSE && !result.diseaseName.isNullOrEmpty()) result.description ?: "" else result.description ?: ""
+                        1 -> result.careGuide ?: "No care guide available."
+                        2 -> if (mode == ScanMode.DIAGNOSE) result.treatment ?: "No prevention details available." else result.origin ?: "No origin details available."
+                            else -> result.description ?: ""
+                        }.ifEmpty { "Information not available." },
+                        fontSize = 17.sp,
+                        color = primaryGreen.copy(alpha = 0.8f),
+                        lineHeight = 26.sp
+                    )
+     
+                    Spacer(modifier = Modifier.height(24.dp))
+     
+                    // Tags section
+                    FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -193,30 +218,32 @@ fun ResultScreen(
                                 }
                             },
                             colors = AssistChipDefaults.assistChipColors(
-                                containerColor = Color(0xFFCFE2D4),
-                                labelColor = primaryGreen,
-                                leadingIconContentColor = primaryGreen
-                            ),
-                            border = null,
-                            shape = RoundedCornerShape(12.dp)
-                        )
+                                    containerColor = Color(0xFFE2EEE6),
+                                    labelColor = primaryGreen,
+                                    leadingIconContentColor = primaryGreen
+                                ),
+                                border = null,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
                     }
+                }
                 }
                 
                 Spacer(modifier = Modifier.height(24.dp))
-
+ 
                 // Action Buttons
                 Button(
                     onClick = { /* TODO */ },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp),
+                        .height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = primaryGreen, contentColor = Color.White),
-                    shape = RoundedCornerShape(32.dp)
+                    shape = RoundedCornerShape(28.dp)
                 ) {
-                    Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(24.dp))
+                    Icon(Icons.Outlined.BookmarkBorder, contentDescription = null, modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text("Save to My Collection", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("Save to My Collection", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
                 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -225,14 +252,14 @@ fun ResultScreen(
                     onClick = onRetake,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp),
-                    shape = RoundedCornerShape(32.dp),
+                        .height(56.dp),
+                    shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = primaryGreen),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, primaryGreen)
+                    border = androidx.compose.foundation.BorderStroke(1.5.dp, primaryGreen)
                 ) {
-                    Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(24.dp))
+                    Icon(Icons.Outlined.CameraAlt, contentDescription = null, modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text("Retake Photo", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("Retake Photo", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
                 
                 Spacer(modifier = Modifier.height(40.dp))
@@ -240,56 +267,109 @@ fun ResultScreen(
         }
     }
 }
-
+ 
 @Composable
 fun LeafIndicator(color: Color) {
-    Canvas(modifier = Modifier.size(width = 60.dp, height = 24.dp)) {
-        val path = Path().apply {
-            moveTo(0f, 10f)
-            quadraticTo(size.width * 0.4f, -5f, size.width * 0.8f, 15f)
-            quadraticTo(size.width * 0.4f, 25f, 0f, 10f)
+    Canvas(modifier = Modifier.size(width = 60.dp, height = 18.dp)) {
+        val w = size.width
+        val h = size.height
+        
+        // Solid leaf path
+        val leafColor = color.copy(alpha = 0.9f)
+        val leafPath = Path().apply {
+            moveTo(0f, h / 2)
+            quadraticTo(w * 0.3f, 0f, w, h / 2)
+            quadraticTo(w * 0.3f, h, 0f, h / 2)
             close()
-            // Stem line
-            moveTo(0f, 10f)
-            lineTo(size.width * 0.6f, 12f)
         }
-        drawPath(path, color)
+        drawPath(leafPath, leafColor)
+        
+        // Leaf veins (drawn as a darker stroke or cut out, we'll draw over with background color to simulate cutout)
+        val veinColor = Color(0xFFE8F5E9) // Matching lightBackground
+        val veinPath = Path().apply {
+            moveTo(w * 0.1f, h / 2)
+            lineTo(w * 0.9f, h / 2)
+            
+            // Branching veins
+            moveTo(w * 0.3f, h / 2)
+            lineTo(w * 0.5f, h * 0.2f)
+            
+            moveTo(w * 0.4f, h / 2)
+            lineTo(w * 0.6f, h * 0.8f)
+            
+            moveTo(w * 0.6f, h / 2)
+            lineTo(w * 0.8f, h * 0.3f)
+        }
+        drawPath(veinPath, veinColor, style = Stroke(width = 1.5.dp.toPx()))
     }
 }
-
+ 
 @Composable
 fun MatchRing(percentage: Int, color: Color, modifier: Modifier = Modifier) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val strokeWidth = 3.dp.toPx()
+            val w = size.width
+            val h = size.height
+            val cx = w / 2
+            val cy = h / 2
             
-            // Draw floral pattern ring
+            // Draw a beautiful wreath of small leaves along the circle matching result.png
+            val wreathRadius = size.minDimension / 2 - 10.dp.toPx()
+            
+            // Draw 22 leaves rotated along the circle
+            val leafCount = 22
+            for (i in 0 until leafCount) {
+                val angleDegrees = (i * (360f / leafCount)) - 90f // Start from top
+                val angleRad = Math.toRadians(angleDegrees.toDouble())
+                
+                val lx = cx + wreathRadius * Math.cos(angleRad).toFloat()
+                val ly = cy + wreathRadius * Math.sin(angleRad).toFloat()
+                
+                // Draw a leaf path at (lx, ly) rotated to follow the circle
+                val leafPath = Path()
+                val rotationRad = Math.toRadians((angleDegrees + 45f).toDouble())
+                val cos = Math.cos(rotationRad).toFloat()
+                val sin = Math.sin(rotationRad).toFloat()
+                
+                val leafSize = 8.dp.toPx()
+                val p0x = 0f
+                val p0y = 0f
+                val p1x = leafSize * 0.5f
+                val p1y = -leafSize * 0.3f
+                val p2x = leafSize
+                val p2y = 0f
+                val p3x = leafSize * 0.5f
+                val p3y = leafSize * 0.3f
+                
+                fun rotX(px: Float, py: Float) = lx + px * cos - py * sin
+                fun rotY(px: Float, py: Float) = ly + px * sin + py * cos
+                
+                leafPath.moveTo(rotX(p0x, p0y), rotY(p0x, p0y))
+                leafPath.quadraticTo(rotX(p1x, p1y), rotY(p1x, p1y), rotX(p2x, p2y), rotY(p2x, p2y))
+                leafPath.quadraticTo(rotX(p3x, p3y), rotY(p3x, p3y), rotX(p0x, p0y), rotY(p0x, p0y))
+                leafPath.close()
+                
+                drawPath(leafPath, color)
+            }
+            
+            // Subtle thin green circle inside the wreath
             drawCircle(
-                color = color.copy(alpha = 0.2f),
-                radius = size.minDimension / 2 - strokeWidth,
+                color = color.copy(alpha = 0.3f),
+                radius = wreathRadius - 3.dp.toPx(),
                 style = Stroke(width = 1.dp.toPx())
             )
-            
-            val radius = size.minDimension / 2 - 10.dp.toPx()
-            for (i in 0 until 12) {
-                val angle = (i * 30).toDouble()
-                val x = center.x + radius * Math.cos(Math.toRadians(angle)).toFloat()
-                val y = center.y + radius * Math.sin(Math.toRadians(angle)).toFloat()
-                
-                drawCircle(color, 3.dp.toPx(), Offset(x, y))
-            }
         }
         
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "$percentage%",
-                fontSize = 20.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = color
             )
             Text(
                 text = "MATCH",
-                fontSize = 9.sp,
+                fontSize = 8.sp,
                 fontWeight = FontWeight.Bold,
                 color = color
             )
