@@ -4,6 +4,7 @@ plugins {
   alias(libs.plugins.google.devtools.ksp)
   alias(libs.plugins.roborazzi)
   alias(libs.plugins.secrets)
+  alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -112,4 +113,11 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.tooling)
   "ksp"(libs.androidx.room.compiler)
   "ksp"(libs.moshi.kotlin.codegen)
+
+  // Supabase
+  implementation(platform(libs.supabase.bom))
+  implementation(libs.supabase.postgrest)
+  implementation(libs.supabase.kt)
+  implementation(libs.ktor.client.okhttp)
+  implementation(libs.kotlinx.serialization.json)
 }

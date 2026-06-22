@@ -5,6 +5,9 @@ import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.util.Log
 import android.view.ViewGroup
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -20,8 +23,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.FlashOff
+import androidx.compose.material.icons.filled.FlashOff
+import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.outlined.Image as ImageIcon
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,11 +57,32 @@ fun CameraScreen(
     onClose: () -> Unit = {},
     selectedMode: ScanMode = ScanMode.IDENTIFY,
     onModeSelected: (ScanMode) -> Unit = {},
+    onOpenWishlist: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var imageCapture: ImageCapture? by remember { mutableStateOf(null) }
+    var camera: Camera? by remember { mutableStateOf(null) }
+    var isFlashOn by remember { mutableStateOf(false) }
+
+    // Gallery picker launcher
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+                inputStream?.close()
+                if (bitmap != null) {
+                    onImageCaptured(bitmap)
+                }
+            } catch (e: Exception) {
+                Log.e("Gallery", "Failed to load image from gallery: ${e.message}", e)
+            }
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         AndroidView(
@@ -68,8 +95,9 @@ fun CameraScreen(
                     scaleType = PreviewView.ScaleType.FILL_CENTER
                 }
                 val executor = ContextCompat.getMainExecutor(ctx)
-                setupCamera(ctx, lifecycleOwner, previewView, executor) { capture ->
+                setupCamera(ctx, lifecycleOwner, previewView, executor) { capture, cam ->
                     imageCapture = capture
+                    camera = cam
                 }
                 previewView
             },
@@ -79,12 +107,15 @@ fun CameraScreen(
         // Floral Overlay Guide
         CameraOverlay(modifier = Modifier.fillMaxSize())
 
-        // Top Bar - Simple Close Button
-        Box(
+        // Top Bar
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 48.dp, start = 16.dp, end = 16.dp)
+                .padding(top = 48.dp, start = 16.dp, end = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            // Close Button
             IconButton(
                 onClick = onClose,
                 modifier = Modifier
@@ -92,9 +123,24 @@ fun CameraScreen(
                     .background(Color.Black.copy(alpha = 0.3f), CircleShape)
             ) {
                 Icon(
-                    Icons.Default.Close, 
-                    contentDescription = "Close", 
+                    Icons.Default.Close,
+                    contentDescription = "Close",
                     tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            // Wishlist / Collection Button
+            IconButton(
+                onClick = onOpenWishlist,
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Bookmark,
+                    contentDescription = "Buka Koleksi",
+                    tint = Color(0xFF4CAF50),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -136,10 +182,10 @@ fun CameraScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Gallery Icon
-                IconButton(onClick = { /* TODO gallery */ }) {
+                IconButton(onClick = { galleryLauncher.launch("image/*") }) {
                     Icon(
-                        Icons.Outlined.ImageIcon, 
-                        contentDescription = "Gallery", 
+                        Icons.Outlined.ImageIcon,
+                        contentDescription = "Pilih dari Galeri",
                         tint = Color.White,
                         modifier = Modifier.size(32.dp)
                     )
@@ -152,12 +198,15 @@ fun CameraScreen(
                     }
                 )
 
-                // Flash Icon
-                IconButton(onClick = { /* TODO flash */ }) {
+                // Flash Toggle Icon
+                IconButton(onClick = {
+                    isFlashOn = !isFlashOn
+                    camera?.cameraControl?.enableTorch(isFlashOn)
+                }) {
                     Icon(
-                        Icons.Outlined.FlashOff, 
-                        contentDescription = "Flash", 
-                        tint = Color.White,
+                        imageVector = if (isFlashOn) Icons.Filled.FlashOn else Icons.Filled.FlashOff,
+                        contentDescription = if (isFlashOn) "Matikan Flash" else "Nyalakan Flash",
+                        tint = if (isFlashOn) Color(0xFFFFEB3B) else Color.White,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -232,13 +281,11 @@ fun FloralFrame(modifier: Modifier = Modifier) {
         val color = Color(0xFFC5E1A5) // Light Green
 
         // Draw leafy corners
-        // This is a simplified programmatic version of the vine/leaf frame
         val cornerPaths = listOf(
             // Top Left
             Path().apply {
                 moveTo(40.dp.toPx(), 0f)
                 quadraticTo(0f, 0f, 0f, 40.dp.toPx())
-                // Add some small "leaf" shapes
                 for (i in 0..3) {
                     val offset = i * 12.dp.toPx()
                     moveTo(offset, 0f)
@@ -302,7 +349,7 @@ private fun setupCamera(
     lifecycleOwner: androidx.lifecycle.LifecycleOwner,
     previewView: PreviewView,
     executor: Executor,
-    onImageCaptureReady: (ImageCapture) -> Unit
+    onImageCaptureReady: (ImageCapture, Camera) -> Unit
 ) {
     val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
     cameraProviderFuture.addListener({
@@ -317,13 +364,13 @@ private fun setupCamera(
 
         try {
             cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(
+            val camera = cameraProvider.bindToLifecycle(
                 lifecycleOwner,
                 cameraSelector,
                 preview,
                 imageCapture
             )
-            onImageCaptureReady(imageCapture)
+            onImageCaptureReady(imageCapture, camera)
         } catch (e: Exception) {
             Log.e("Camera", "Use case binding failed", e)
         }
