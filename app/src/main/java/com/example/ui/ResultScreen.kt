@@ -50,6 +50,7 @@ fun ResultScreen(
     val viewModel: MainViewModel = viewModel()
     val saveState by viewModel.wishlistSaveState.collectAsState()
 
+    var showHealthDialog by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = if (mode == ScanMode.DIAGNOSE) {
         listOf("Diagnosis", "Care Guide", "Prevention")
@@ -68,7 +69,7 @@ fun ResultScreen(
     LaunchedEffect(saveState) {
         when (saveState) {
             is WishlistSaveState.Success -> {
-                snackbarHostState.showSnackbar("Berhasil disimpan ke Wishlist!")
+                snackbarHostState.showSnackbar("Berhasil disimpan ke Collection!")
                 viewModel.resetSaveState()
             }
             is WishlistSaveState.Error -> {
@@ -248,6 +249,22 @@ fun ResultScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Health Button
+                    Button(
+                        onClick = { showHealthDialog = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC8E6C9), contentColor = primaryGreen),
+                        shape = RoundedCornerShape(28.dp)
+                    ) {
+                        Icon(Icons.Outlined.Healing, contentDescription = null, modifier = Modifier.size(24.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text("Cek Kesehatan Tanaman", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     // Save to Wishlist Button
                     val isSaving = saveState is WishlistSaveState.Saving
                     Button(
@@ -289,6 +306,97 @@ fun ResultScreen(
                     Spacer(modifier = Modifier.height(40.dp))
                 }
             }
+        }
+        if (showHealthDialog) {
+            AlertDialog(
+                onDismissRequest = { showHealthDialog = false },
+                title = { 
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.Healing, contentDescription = null, tint = primaryGreen)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "Status Kesehatan", color = primaryGreen, fontWeight = FontWeight.Bold) 
+                    }
+                },
+                text = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        when {
+                            result.isDead == true -> {
+                                Text(
+                                    "Kondisi: Mati", 
+                                    color = Color(0xFFD32F2F), 
+                                    fontWeight = FontWeight.Bold, 
+                                    fontSize = 18.sp
+                                )
+                                Text("Tanaman ini tampaknya sudah mati dan mungkin tidak dapat diselamatkan.", color = primaryGreen)
+                            }
+                            result.isHealthy == false -> {
+                                Text(
+                                    "Kondisi: Kurang Sehat", 
+                                    color = Color(0xFFF57C00), 
+                                    fontWeight = FontWeight.Bold, 
+                                    fontSize = 18.sp
+                                )
+                                
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text("Penilaian", fontWeight = FontWeight.SemiBold, color = primaryGreen, fontSize = 14.sp)
+                                    Text(result.healthAssessment ?: "Tanaman menunjukkan tanda-tanda stres.", color = primaryGreen.copy(alpha = 0.8f), fontSize = 14.sp)
+                                }
+                                
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF81C784)),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .background(Color(0xFFC8E6C9), CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(Icons.Outlined.Eco, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(20.dp))
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column {
+                                            Text("Solusi Perawatan", fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32), fontSize = 15.sp)
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(result.healthSolution ?: "Pastikan air, cahaya, dan nutrisi yang cukup.", color = primaryGreen, fontSize = 14.sp, lineHeight = 20.sp)
+                                        }
+                                    }
+                                }
+                            }
+                            result.isHealthy == true -> {
+                                Text(
+                                    "Kondisi: Sehat", 
+                                    color = Color(0xFF388E3C), 
+                                    fontWeight = FontWeight.Bold, 
+                                    fontSize = 18.sp
+                                )
+                                Text(result.healthAssessment ?: "Tanaman terlihat dalam kondisi baik dan sehat.", color = primaryGreen)
+                            }
+                            else -> {
+                                Text("Status kesehatan tidak tersedia.", color = primaryGreen)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showHealthDialog = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = primaryGreen),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Text("Tutup", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                },
+                containerColor = lightBackground
+            )
         }
     }
 }

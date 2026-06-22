@@ -42,13 +42,17 @@ class PlantRepository {
                     ),
                     "diseaseName" to Schema(type = "STRING", description = "Indonesian name of the identified disease or pest (e.g. 'Karat Daun', 'Bercak Hitam', 'Hama Kutu'). Set to null if healthy."),
                     "hasDisease" to Schema(type = "BOOLEAN", description = "True if a plant disease, fungal infestation, or pest is detected. False otherwise."),
-                    "treatment" to Schema(type = "STRING", description = "Detail penanganan penyakit tanaman serta rekomendasi pestisida yang harus digunakan (dalam Bahasa Indonesia). Set to null if healthy.")
+                    "treatment" to Schema(type = "STRING", description = "Detail penanganan penyakit tanaman serta rekomendasi pestisida yang harus digunakan (dalam Bahasa Indonesia). Set to null if healthy."),
+                    "isHealthy" to Schema(type = "BOOLEAN", description = "True if the plant looks generally healthy. False if it shows signs of poor health, stress, or is dead."),
+                    "isDead" to Schema(type = "BOOLEAN", description = "True if the plant appears completely dead or beyond recovery."),
+                    "healthAssessment" to Schema(type = "STRING", description = "A brief assessment of the plant's overall health condition in Indonesian (e.g. 'Sehat', 'Stres karena kurang air', 'Mati')."),
+                    "healthSolution" to Schema(type = "STRING", description = "Solution to improve the plant's health if it's not healthy (in Indonesian). Set to null if healthy or dead.")
                 )
             )
 
             val promptText = when (mode) {
-                ScanMode.IDENTIFY -> "Analyze this image and identify the plant. Return structural details based on the schema."
-                ScanMode.DIAGNOSE -> "Analyze this plant leaf image to detect diseases, pests, fungal infections, or nutrient deficiencies. Set hasDisease to true if any issue is detected, identify the diseaseName in Indonesian, and specify detailed treatment and pesticide recommendations in Indonesian."
+                ScanMode.IDENTIFY -> "Analyze this image and identify the plant. Assess its overall health (isHealthy, isDead) and provide healthAssessment and healthSolution if needed. Return structural details based on the schema."
+                ScanMode.DIAGNOSE -> "Analyze this plant leaf image to detect diseases, pests, fungal infections, nutrient deficiencies, or general health issues. Assess if the plant is dead. Set hasDisease to true if any issue is detected, identify the diseaseName in Indonesian, and specify detailed treatment and pesticide recommendations in Indonesian. Also evaluate overall health (isHealthy, isDead) and provide healthAssessment and healthSolution in Indonesian."
             }
 
             val request = GenerateContentRequest(

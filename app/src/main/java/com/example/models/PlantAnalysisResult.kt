@@ -15,5 +15,9 @@ data class PlantAnalysisResult(
     @Json(name = "tags") val tags: List<String>?,
     @Json(name = "diseaseName") val diseaseName: String? = null,
     @Json(name = "hasDisease") val hasDisease: Boolean? = null,
-    @Json(name = "treatment") val treatment: String? = null
+    @Json(name = "treatment") val treatment: String? = null,
+    @Json(name = "isHealthy") val isHealthy: Boolean? = null,
+    @Json(name = "isDead") val isDead: Boolean? = null,
+    @Json(name = "healthAssessment") val healthAssessment: String? = null,
+    @Json(name = "healthSolution") val healthSolution: String? = null
 )
