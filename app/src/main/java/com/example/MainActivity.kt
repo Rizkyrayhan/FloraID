@@ -2,7 +2,6 @@ package com.example
 
 import android.Manifest
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,6 +25,7 @@ import com.example.ui.AppState
 import com.example.ui.CameraScreen
 import com.example.ui.MainViewModel
 import com.example.ui.ResultScreen
+import com.example.ui.WishlistScreen
 import com.example.ui.theme.MyApplicationTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
-                
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = Color.Black
@@ -47,7 +47,6 @@ class MainActivity : ComponentActivity() {
                     if (cameraPermissionState.status.isGranted) {
                         AppHost(onClose = { finish() })
                     } else {
-                        // Request permission
                         AlertDialog(
                             onDismissRequest = { },
                             title = { Text("Kamera Dibutuhkan") },
@@ -68,6 +67,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppHost(viewModel: MainViewModel = viewModel(), onClose: () -> Unit = {}) {
     val uiState by viewModel.uiState.collectAsState()
+    val wishlistItems by viewModel.wishlistItems.collectAsState()
 
     when (val state = uiState) {
         is AppState.Camera -> {
@@ -78,12 +78,12 @@ fun AppHost(viewModel: MainViewModel = viewModel(), onClose: () -> Unit = {}) {
                 },
                 onClose = onClose,
                 selectedMode = selectedMode,
-                onModeSelected = { mode -> viewModel.setScanMode(mode) }
+                onModeSelected = { mode -> viewModel.setScanMode(mode) },
+                onOpenWishlist = { viewModel.showWishlist() }
             )
         }
         is AppState.Analyzing -> {
             var progress by remember { mutableFloatStateOf(0.1f) }
-            // Simulate progression
             androidx.compose.runtime.LaunchedEffect(Unit) {
                 while (progress < 0.9f) {
                     kotlinx.coroutines.delay(500)
@@ -113,6 +113,14 @@ fun AppHost(viewModel: MainViewModel = viewModel(), onClose: () -> Unit = {}) {
                         Text("Coba Lagi")
                     }
                 }
+            )
+        }
+        is AppState.Wishlist -> {
+            WishlistScreen(
+                items = wishlistItems,
+                onBack = { viewModel.resetToCamera() },
+                onDelete = { id -> viewModel.deleteFromWishlist(id) },
+                onItemClick = { item -> viewModel.openWishlistItem(item) }
             )
         }
     }
